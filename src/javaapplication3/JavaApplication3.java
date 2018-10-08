@@ -11,56 +11,54 @@ import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInsta
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.googleapis.media.MediaHttpDownloader;
 import com.google.api.client.googleapis.media.MediaHttpUploader;
 import com.google.api.client.http.FileContent;
-import com.google.api.services.drive.Drive;
-import com.google.api.services.drive.model.File;
 import com.google.api.client.http.GenericUrl;
-import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.HttpTransport;
-import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.Preconditions;
 import com.google.api.client.util.store.FileDataStoreFactory;
-import com.google.api.services.drive.DriveScopes;
-import com.google.api.client.util.store.DataStoreFactory;
-import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.File;
-
-
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.util.Collections;
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 
 /**
  *
- * @author tiago.lucas
+ * @author rmistry@google.com (Ravi Mistry)
+ * Alterações (ou adaptações) feitas por Tiago Vitorino
  */
 public class JavaApplication3 {
 
-    private static final String APPLICATION_NAME = "";
+    /**
+   * Be sure to specify the name of your application. If the application name is {@code null} or
+   * blank, the application will log a warning. Suggested format is "MyCompany-ProductName/1.0".
+   */
+    private static final String APPLICATION_NAME = "JavaApplication3";
     private static final JsonFactory JSON_FACTORY = (JsonFactory.class.cast(JacksonFactory.getDefaultInstance()));
     private static FileDataStoreFactory dataStoreFactory;
     private static HttpTransport httpTransport;
-    private static final String UPLOAD_FILE_PATH = "C:/teste/teste.txt";
-    private static final String DIR_FOR_DOWNLOADS = "C:/teste";
-    private static final java.io.File UPLOAD_FILE = new java.io.File(UPLOAD_FILE_PATH);
+    JFileChooser jc = new JFileChooser();    
+    private static String UPLOAD_FILE_PATH = "C:/teste/teste.txt";         //ARQUIVO APENAS DE TESTE
+    private static final String DIR_FOR_DOWNLOADS = "C:/teste";            //PASTA QUE RECEBERÁ OS DOWNLOADS
+    private static java.io.File UPLOAD_FILE = new java.io.File(UPLOAD_FILE_PATH);
+    
+    //private static String client_id_json;
+    
+    /** Directory to store user credentials. */
     private static final java.io.File DATA_STORE_DIR
-            = new java.io.File(System.getProperty("user.home"), ".store/javaapplication3");
+            = new java.io.File(System.getProperty("user.home"), ".store/javaapplication3-1");   //SE NÃO FUNCIONAR, ALTERE ESSA PASTA.
     private static Drive drive;
 
     /**
@@ -68,6 +66,25 @@ public class JavaApplication3 {
      */
     public static void main(String[] args) throws GeneralSecurityException, IOException {
         
+        JOptionPane.showMessageDialog(null, "Escolha o arquivo a ser enviado");
+        JavaApplication3 ja = new JavaApplication3();
+        int returnVal = ja.jc.showOpenDialog(ja.jc);
+        java.io.File f = null;
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            f = ja.jc.getSelectedFile();
+        }else{
+            System.exit(0);
+        }
+        UPLOAD_FILE_PATH = f.getAbsolutePath();
+        UPLOAD_FILE = f;
+        JOptionPane.showMessageDialog(null, "Escolha o arquivo de credencial");
+        returnVal = ja.jc.showOpenDialog(ja.jc);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            f = ja.jc.getSelectedFile();
+        }else{
+            System.exit(0);
+        }
+        String client_id_json = f.getAbsolutePath();        
         Preconditions.checkArgument(
                 !UPLOAD_FILE_PATH.startsWith("Enter ") && !DIR_FOR_DOWNLOADS.startsWith("Enter "),
                 "Please enter the upload file path and download directory in %s", JavaApplication3.class);
@@ -75,7 +92,7 @@ public class JavaApplication3 {
             httpTransport = GoogleNetHttpTransport.newTrustedTransport();
             dataStoreFactory = new FileDataStoreFactory(DATA_STORE_DIR);
             // authorization
-            Credential credential = authorize();
+            Credential credential = ja.authorize(client_id_json);
             // set up the global Drive instance
             drive = new Drive.Builder(httpTransport, JSON_FACTORY, credential).setApplicationName(
                     APPLICATION_NAME).build();
@@ -165,10 +182,11 @@ public class JavaApplication3 {
         }
     }
 
-    private static Credential authorize() throws Exception {
+    private Credential authorize(String client_id_json_caminho) throws Exception {
         // load client secrets
+        InputStream is = new FileInputStream(client_id_json_caminho);
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY,
-                new InputStreamReader(JavaApplication3.class.getResourceAsStream("client_id.json")));
+                new InputStreamReader(is,"UTF-8"));//JavaApplication3.class.getResourceAsStream(client_id_json)));
         if (clientSecrets.getDetails().getClientId().startsWith("Enter")
                 || clientSecrets.getDetails().getClientSecret().startsWith("Enter ")) {
             System.out.println(

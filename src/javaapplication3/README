@@ -1,0 +1,38 @@
+********************************************************************************
+Autor rmistry@google.com (Ravi Mistry)
+
+Alterações e/ou adaptações feitas por Tiago Vitorino
+********************************************************************************
+
+Se não funcionar faça o seguinte:
+1º Execute-o com o depurador;
+2º Para o aplicativo funcionar é necessário que o programa execute uma página de
+permissão no navegador solicitando permissão para acessar o google drive.
+3º Se o passo 2 não ocorrer, verifique se você está utilizando a credencial 
+correta. Lembrando que a credencial é aquele arquivo obtido pelo site das api 
+do google drive.
+4º Se permanecer o problema, tente executar como administrador;
+5º Se permanecer o problema, tente alterar a pasta onde será armazenada a 
+credencial, essa pasta fica na linha 61 da classe JavaApplication3, atualmente 
+a pasta que está armazenando a credencial é a 
+C:/users/tiago.lucas/.store/javaapplication3-1, altere para outra pasta e 
+verifique se o problema é resolvido.
+
+********************************************************************************
+
+Lembrando que as credenciais do google ficam nessa página:
+
+https://console.developers.google.com/apis/credentials
+
+DENTRO DO SITE, NÃO ESQUEÇA DE SELECIONAR O PROJETO DESEJADO, para visualizar 
+as credenciais corretas.
+
+********************************************************************************
+
+É IMPORTANTE LEMBRAR QUE AS ÚNICAS CLASSES QUE SÃO UTILIZADAS EFETIVAMENTE POR 
+ESTE PROGRAMA SÃO: JavaApplication3, FileDownloadProgressListener, 
+FileUploadProgressListener, View...
+As outras classes estão aí para auxiliar em futuras alterações, adaptações ou 
+atualizações.
+
+********************************************************************************
